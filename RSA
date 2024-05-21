@@ -1,0 +1,48 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity testx is
+    port (
+        m : in  std_logic_vector(87 downto 0);  -- 11 caractères * 8 bits pour le message d'entrée
+        k : in  integer;                       -- Clé de décalage pour le chiffrement
+        s : out std_logic_vector(87 downto 0)  -- Message chiffré
+    );
+end entity testx;
+
+architecture Behavioral of testx is
+begin
+    process(m, k)
+        variable temp_output : std_logic_vector(87 downto 0);
+        variable current_char : std_logic_vector(7 downto 0);
+        variable char_value : integer;
+        variable new_value : integer;
+        constant LOWER_A : integer := 97;
+        constant LOWER_Z : integer := 122;
+        constant UPPER_A : integer := 65;
+        constant UPPER_Z : integer := 90;
+    begin
+        for i in 0 to 10 loop
+            -- Extraire le caractère courant
+            current_char := m((i+1)*8-1 downto i*8);
+
+            -- Convertir le caractère courant en valeur entière
+            char_value := to_integer(unsigned(current_char));
+
+            -- Chiffrer le caractère s'il est alphabétique
+            if char_value >= LOWER_A and char_value <= LOWER_Z then
+                new_value := LOWER_A + (char_value - LOWER_A + k) mod 26;
+            elsif char_value >= UPPER_A and char_value <= UPPER_Z then
+                new_value := UPPER_A + (char_value - UPPER_A + k) mod 26;
+            else
+                new_value := char_value;  -- Les caractères non alphabétiques restent inchangés
+            end if;
+
+            -- Convertir la nouvelle valeur entière en std_logic_vector
+            temp_output((i+1)*8-1 downto i*8) := std_logic_vector(to_unsigned(new_value, 8));
+        end loop;
+
+        -- Assigner la sortie temporaire au port de sortie réel
+        s <= temp_output;
+    end process;
+end architecture Behavioral;
